@@ -65,58 +65,55 @@ public class GamePlayer : IGamePlayer
     /// </summary>
     public MoveResult TryMove(Position destination)
     {
-        // The game cannot be played after it has been completed.
+        // The game cannot be played after completion.
         if (IsComplete)
         {
             return MoveResult.GameAlreadyCompleted;
         }
 
-        // Check that the destination is inside the 6 x 6 board.
+        // Check board boundaries.
         if (!IsOnBoard(destination))
         {
             return MoveResult.OutOfBounds;
         }
 
-        // Destination must not be the same as the current position.
+        // Cannot move to the same position.
         if (destination.Equals(CurrentPosition))
         {
             return MoveResult.InvalidMovement;
         }
 
-        // Get the piece at the current position.
+        // Get the piece at the player's current position.
         if (!_pieces.TryGetValue(CurrentPosition, out PieceType piece))
         {
             return MoveResult.InvalidMovement;
         }
 
-        // Check whether the piece can make the requested movement.
+        // Validate the movement shape.
         if (!IsValidMove(piece, CurrentPosition, destination))
         {
             return MoveResult.InvalidMovement;
         }
 
-        // Rooks and bishops cannot move through other pieces.
+        // Check whether another piece blocks the path.
         if (IsPathBlocked(piece, CurrentPosition, destination))
         {
             return MoveResult.PathBlocked;
         }
 
-        // The destination cannot already contain another piece.
-        if (_pieces.ContainsKey(destination))
+        // A valid destination must contain a fixed piece
+        // or be the target position.
+        if (!_pieces.ContainsKey(destination) &&
+            !destination.Equals(TargetPosition))
         {
             return MoveResult.InvalidDestination;
         }
 
-        // Store the old position.
+        // Store the previous position.
         Position previousPosition = CurrentPosition;
 
-        // Remove the piece from its old position.
-        _pieces.Remove(CurrentPosition);
-
-        // Add the piece at its new position.
-        _pieces[destination] = piece;
-
-        // Update the current position.
+        // Update only the player's position.
+        // Do not move or remove the fixed board pieces.
         CurrentPosition = destination;
 
         // Record the successful move.

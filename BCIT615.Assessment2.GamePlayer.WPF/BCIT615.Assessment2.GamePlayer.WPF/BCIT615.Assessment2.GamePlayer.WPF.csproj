@@ -11,6 +11,7 @@
   <ItemGroup>
     <ProjectReference Include="..\..\src\BCIT615.Assessment1.GamePlayer.Contracts\BCIT615.Assessment1.GamePlayer.Contracts.csproj" />
     <ProjectReference Include="..\..\src\BCIT615.Assessment1.GamePlayer.Model\BCIT615.Assessment1.GamePlayer.Model.csproj" />
+    <ProjectReference Include="..\..\BCIT615.Assessment2.GamePlayer.Persistence\BCIT615.Assessment2.GamePlayer.Persistence.csproj" />
   </ItemGroup>
 
 </Project>
