@@ -12,18 +12,54 @@ public class GameSaveRepository : IGameSaveRepository
     }
 
 
-    public async Task<int> SaveAsync(SavedGame game)
+    public async Task<int> SaveAsync(SavedGame game, int? existingSaveId)
     {
-        bool nameExists = await _context.SavedGames
-            .AnyAsync(g => g.Name.ToLower() == game.Name.Trim().ToLower());
+        string name = game.Name.Trim();
 
-        if (nameExists)
+        if (string.IsNullOrWhiteSpace(name))
         {
-            throw new InvalidOperationException(
-                $"A saved game named '{game.Name}' already exists. Please choose a different name.");
+            throw new ArgumentException("Please enter a game name.");
         }
 
-        game.Name = game.Name.Trim();
+        // Check whether another saved game already uses this name.
+        bool duplicateName = await _context.SavedGames
+            .AnyAsync(g =>
+                g.Name.ToLower() == name.ToLower() &&
+                g.Id != existingSaveId);
+
+        if (duplicateName)
+        {
+            throw new InvalidOperationException(
+                $"A saved game named '{name}' already exists. Please choose a different name.");
+        }
+
+        // If this is an existing saved game, update it.
+        if (existingSaveId.HasValue)
+        {
+            var existingGame = await _context.SavedGames
+                .FirstOrDefaultAsync(g => g.Id == existingSaveId.Value);
+
+            if (existingGame == null)
+            {
+                throw new InvalidOperationException(
+                    "The saved game no longer exists. Please save it as a new game.");
+            }
+
+            existingGame.Name = name;
+            existingGame.BoardId = game.BoardId;
+            existingGame.CurrentRow = game.CurrentRow;
+            existingGame.CurrentColumn = game.CurrentColumn;
+            existingGame.IsComplete = game.IsComplete;
+            existingGame.MoveHistoryJson = game.MoveHistoryJson;
+            existingGame.SavedAt = DateTime.UtcNow;
+
+            await _context.SaveChangesAsync();
+
+            return existingGame.Id;
+        }
+
+        // Otherwise, create a new saved game.
+        game.Name = name;
         game.SavedAt = DateTime.UtcNow;
 
         _context.SavedGames.Add(game);

@@ -22,6 +22,9 @@ public partial class MainWindow : Window
     private readonly GamePlayerDbContext _dbContext;
     private readonly GameSaveRepository _repository;
 
+    // Tracks which saved record belongs to the current game.
+    private int? _currentSavedGameId = null;
+
     public MainWindow()
     {
         InitializeComponent();
@@ -290,6 +293,8 @@ public partial class MainWindow : Window
     {
         _game.Restart();
 
+        _currentSavedGameId = null;
+
         //Clear the row and column input fields.
         RowInput.Clear();
         ColumnInput.Clear();
@@ -324,7 +329,7 @@ public partial class MainWindow : Window
 
     // Save the current game.
     private async void SaveGameButton_Click(
-        object sender, RoutedEventArgs e)
+    object sender, RoutedEventArgs e)
     {
         string name = SaveNameInput.Text.Trim();
 
@@ -359,7 +364,12 @@ public partial class MainWindow : Window
                 MoveHistoryJson = JsonSerializer.Serialize(moves)
             };
 
-            await _repository.SaveAsync(saved);
+            // Create a new record or update the current saved record.
+            int savedId = await _repository.SaveAsync(
+                saved, _currentSavedGameId);
+
+            // Remember the record ID for future overwrites.
+            _currentSavedGameId = savedId;
 
             StatusText.Text = $"Game '{name}' saved successfully.";
             StatusText.Foreground = Brushes.Green;
@@ -498,6 +508,8 @@ public partial class MainWindow : Window
 
             // Replace the current game only after all checks succeed.
             _game = restoredGame;
+
+            _currentSavedGameId = saved.Id;
 
             // Restore the selected saved game name in the input field.
             SaveNameInput.Text = saved.Name;

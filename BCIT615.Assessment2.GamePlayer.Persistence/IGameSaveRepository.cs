@@ -2,7 +2,7 @@
 
 public interface IGameSaveRepository
 {
-    Task<int> SaveAsync(SavedGame game);
+    Task<int> SaveAsync(SavedGame game, int? existingSaveId);
 
     Task<List<SavedGame>> GetAllAsync();
 
