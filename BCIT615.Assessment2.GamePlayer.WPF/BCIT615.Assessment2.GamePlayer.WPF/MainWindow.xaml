@@ -5,8 +5,138 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:BCIT615.Assessment2.GamePlayer.WPF"
         mc:Ignorable="d"
-        Title="MainWindow" Height="450" Width="800">
-    <Grid>
+        Title="Chess Maze Game Player" Height="750" Width="1050"
+        WindowStartupLocation="CenterScreen"
+        Background="#F3F5F9">
+    <Grid Margin="25">
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="2*"/>
+            <ColumnDefinition Width="*"/>
+        </Grid.ColumnDefinitions>
+
+        <!-- Chessboard area -->
+        <StackPanel Grid.Column="0" Margin="10">
+
+            <TextBlock Text="Chess Maze Game"
+                       FontSize="28"
+                       FontWeight="Bold"
+                       Margin="0,0,0,10"/>
+
+            <TextBlock Text="Move the player through the chess maze"
+                       FontSize="14"
+                       Foreground="Gray"
+                       Margin="0,0,0,20"/>
+
+            <UniformGrid Rows="6"
+                         Columns="6"
+                         Width="480"
+                         Height="480"
+                         HorizontalAlignment="Left">
+
+                <Border Background="#FFFFFF"/>
+                <Border Background="#DCE4EF"/>
+                <Border Background="#FFFFFF"/>
+                <Border Background="#DCE4EF"/>
+                <Border Background="#FFFFFF"/>
+                <Border Background="#DCE4EF"/>
+
+                <Border Background="#DCE4EF"/>
+                <Border Background="#FFFFFF"/>
+                <Border Background="#DCE4EF"/>
+                <Border Background="#FFFFFF"/>
+                <Border Background="#DCE4EF"/>
+                <Border Background="#FFFFFF"/>
+
+                <Border Background="#FFFFFF"/>
+                <Border Background="#DCE4EF"/>
+                <Border Background="#FFFFFF"/>
+                <Border Background="#DCE4EF"/>
+                <Border Background="#FFFFFF"/>
+                <Border Background="#DCE4EF"/>
+
+                <Border Background="#DCE4EF"/>
+                <Border Background="#FFFFFF"/>
+                <Border Background="#DCE4EF"/>
+                <Border Background="#FFFFFF"/>
+                <Border Background="#DCE4EF"/>
+                <Border Background="#FFFFFF"/>
+
+                <Border Background="#FFFFFF"/>
+                <Border Background="#DCE4EF"/>
+                <Border Background="#FFFFFF"/>
+                <Border Background="#DCE4EF"/>
+                <Border Background="#FFFFFF"/>
+                <Border Background="#DCE4EF"/>
+
+                <Border Background="#DCE4EF"/>
+                <Border Background="#FFFFFF"/>
+                <Border Background="#DCE4EF"/>
+                <Border Background="#FFFFFF"/>
+                <Border Background="#DCE4EF"/>
+                <Border Background="#FFFFFF"/>
+
+            </UniformGrid>
+
+        </StackPanel>
+
+        <!-- Game controls -->
+        <StackPanel Grid.Column="1" Margin="25,45,5,0">
+
+            <TextBlock Text="Game Information"
+                       FontSize="22"
+                       FontWeight="Bold"
+                       Margin="0,0,0,20"/>
+
+            <TextBlock Text="Current Position"/>
+            <TextBlock Text="(5, 0)"
+                       FontSize="20"
+                       FontWeight="Bold"
+                       Margin="0,5,0,20"/>
+
+            <TextBlock Text="Target Position"/>
+            <TextBlock Text="(0, 5)"
+                       FontSize="20"
+                       FontWeight="Bold"
+                       Margin="0,5,0,20"/>
+
+            <Separator Margin="0,0,0,20"/>
+
+            <TextBlock Text="Destination Row"/>
+            <TextBox x:Name="RowInput"
+                     Height="35"
+                     Margin="0,5,0,15"/>
+
+            <TextBlock Text="Destination Column"/>
+            <TextBox x:Name="ColumnInput"
+                     Height="35"
+                     Margin="0,5,0,15"/>
+
+            <Button Content="Move"
+                    Height="40"
+                    Margin="0,5,0,10"
+                    Background="#2563EB"
+                    Foreground="White"
+                    FontWeight="Bold"/>
+
+            <Button Content="Restart"
+                    Height="40"
+                    Margin="0,0,0,20"/>
+
+            <TextBlock Text="Game Status"
+                       FontSize="18"
+                       FontWeight="Bold"/>
+
+            <TextBlock Text="Ready to play"
+                       Foreground="Green"
+                       Margin="0,8,0,20"/>
+
+            <TextBlock Text="Move History"
+                       FontSize="18"
+                       FontWeight="Bold"/>
+
+            <ListBox Height="150"/>
+
+        </StackPanel>
 
     </Grid>
 </Window>
