@@ -20,15 +20,28 @@ public sealed class GamePlayerTests
     }
 
     [TestMethod]
-    public void TryMove_RookCanMoveHorizontally()
+    public void TryMove_RookCanMoveToBishopPosition()
+    {
+        var game = new GamePlayerClass();
+
+        var result = game.TryMove(new Position(5, 3));
+
+        Assert.AreEqual(MoveResult.Success, result);
+        Assert.AreEqual(new Position(5, 3), game.CurrentPosition);
+        Assert.AreEqual(PieceType.Bishop,
+            game.GetPieceAt(new Position(5, 3)));
+    }
+
+    [TestMethod]
+    public void TryMove_ToEmptyNonTargetPosition_ReturnsInvalidDestination()
     {
         var game = new GamePlayerClass();
 
         var result = game.TryMove(new Position(5, 2));
 
-        Assert.AreEqual(MoveResult.Success, result);
-        Assert.AreEqual(new Position(5, 2), game.CurrentPosition);
-        Assert.AreEqual(PieceType.Rook, game.GetPieceAt(new Position(5, 2)));
+        Assert.AreEqual(MoveResult.InvalidDestination, result);
+        Assert.AreEqual(new Position(5, 0), game.CurrentPosition);
+        Assert.AreEqual(0, game.MoveHistory.Count);
     }
 
     [TestMethod]
@@ -65,22 +78,11 @@ public sealed class GamePlayerTests
     }
 
     [TestMethod]
-    public void TryMove_ToOccupiedPosition_ReturnsInvalidDestination()
-    {
-        var game = new GamePlayerClass();
-
-        var result = game.TryMove(new Position(5, 3));
-
-        Assert.AreEqual(MoveResult.InvalidDestination, result);
-        Assert.AreEqual(new Position(5, 0), game.CurrentPosition);
-    }
-
-    [TestMethod]
     public void TryMove_ValidMove_IsAddedToMoveHistory()
     {
         var game = new GamePlayerClass();
 
-        var result = game.TryMove(new Position(4, 0));
+        var result = game.TryMove(new Position(5, 3));
 
         Assert.AreEqual(MoveResult.Success, result);
         Assert.AreEqual(1, game.MoveHistory.Count);
@@ -89,26 +91,30 @@ public sealed class GamePlayerTests
 
         Assert.AreEqual(1, move.SequenceNumber);
         Assert.AreEqual(new Position(5, 0), move.From);
-        Assert.AreEqual(new Position(4, 0), move.To);
+        Assert.AreEqual(new Position(5, 3), move.To);
         Assert.AreEqual(PieceType.Rook, move.MovementPiece);
     }
 
     [TestMethod]
-    public void TryMove_ReachingTarget_CompletesGame()
+    public void TryMove_CompleteReferenceRoute_CompletesGame()
     {
         var game = new GamePlayerClass();
 
-        // Move the rook up to row 0.
-        Assert.AreEqual(
-            MoveResult.Success,
-            game.TryMove(new Position(0, 0)));
+        Assert.AreEqual(MoveResult.Success,
+            game.TryMove(new Position(5, 3)));
 
-        // Move the rook across to the target.
+        Assert.AreEqual(MoveResult.Success,
+            game.TryMove(new Position(3, 5)));
+
+        Assert.AreEqual(MoveResult.Success,
+            game.TryMove(new Position(1, 4)));
+
         var result = game.TryMove(new Position(0, 5));
 
         Assert.AreEqual(MoveResult.GameCompleted, result);
         Assert.AreEqual(new Position(0, 5), game.CurrentPosition);
         Assert.IsTrue(game.IsComplete);
+        Assert.AreEqual(4, game.MoveHistory.Count);
     }
 
     [TestMethod]
@@ -116,13 +122,16 @@ public sealed class GamePlayerTests
     {
         var game = new GamePlayerClass();
 
-        game.TryMove(new Position(0, 0));
+        game.TryMove(new Position(5, 3));
+        game.TryMove(new Position(3, 5));
+        game.TryMove(new Position(1, 4));
         game.TryMove(new Position(0, 5));
 
         var result = game.TryMove(new Position(1, 5));
 
         Assert.AreEqual(MoveResult.GameAlreadyCompleted, result);
         Assert.AreEqual(new Position(0, 5), game.CurrentPosition);
+        Assert.AreEqual(4, game.MoveHistory.Count);
     }
 
     [TestMethod]
@@ -130,8 +139,8 @@ public sealed class GamePlayerTests
     {
         var game = new GamePlayerClass();
 
-        game.TryMove(new Position(4, 0));
-        game.TryMove(new Position(3, 0));
+        game.TryMove(new Position(5, 3));
+        game.TryMove(new Position(3, 5));
 
         game.Restart();
 
@@ -140,5 +149,7 @@ public sealed class GamePlayerTests
         Assert.AreEqual(0, game.MoveHistory.Count);
         Assert.AreEqual(PieceType.Rook,
             game.GetPieceAt(new Position(5, 0)));
+        Assert.AreEqual(PieceType.Bishop,
+            game.GetPieceAt(new Position(5, 3)));
     }
 }
