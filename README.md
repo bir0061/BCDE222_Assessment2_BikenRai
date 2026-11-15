@@ -1,149 +1,136 @@
-# BCIT615 Assessment 1 – GamePlayer
+# BCIT615 Assessment 2 – GamePlayer
 
 ## Overview
 
-This project is a **GamePlayer** application developed using **C# and .NET 9** for BCIT615 Assessment 1.
+This project is a GamePlayer application developed using C#, .NET 9 and WPF for BCIT615 Assessment 2.
 
-The game uses a **6 × 6 board** and includes four pieces:
+The application uses a 6 × 6 game board containing four chess movement pieces: Rook, Bishop, Knight and King.
 
-* Rook
-* Bishop
-* Knight
-* King
+The player starts at position `(5, 0)` and must reach the target position `(0, 5)` by following the required movement route.
 
-The player starts at `(5, 0)` and must reach the target position `(0, 5)`.
+## Technologies Used
 
-## Technologies 
-
-* C#
-* .NET 9
-* MSTest
-* Visual Studio
+- C#
+- .NET 9
+- WPF and XAML
+- Entity Framework Core
+- SQLite
+- MSTest
+- Visual Studio 2026
+- Git and GitHub
 
 ## Main Features
 
-The GamePlayer can:
+The application provides the following functionality:
 
-* Create a new game
-* Check board positions
-* Validate piece movements
-* Check blocked paths
-* Move pieces
-* Store successful moves in move history
-* Detect game completion
-* Prevent moves after the game is completed
+- Displays the 6 × 6 game board.
+- Displays the player, target and four movement pieces.
+- Validates player movement according to the game rules.
+- Prevents invalid movements and provides feedback.
+- Maintains an ordered move history.
+- Detects successful game completion.
+- Allows the player to restart the game.
+- Saves named game records to an SQLite database.
+- Lists, loads and deletes saved games.
+- Restores the player's position, move history and completion state.
+- Validates saved game data before restoring it.
 
-## Initial Game State
+## Reference Board
 
-```text
-Start Position:   (5, 0)
-Target Position:  (0, 5)
-Current Position: (5, 0)
-Is Complete:      false
-```
+| Item | Position |
+|---|---|
+| Starting position | (5, 0) |
+| Rook | (5, 0) |
+| Bishop | (5, 3) |
+| Knight | (3, 5) |
+| King | (1, 4) |
+| Target | (0, 5) |
 
-## Code Quality
+Required movement route:
 
-The project uses basic **Object-Oriented Programming (OOP)** principles.
+`(5,0) → (5,3) → (3,5) → (1,4) → (0,5)`
 
-* **Encapsulation:** Game data is kept private where appropriate.
-* **Private setters:** Important properties can only be changed by the game.
-* **Read-only history:** Move history can be viewed but not directly changed.
-* **Separation of responsibilities:** Movement validation and path checking are handled separately.
-* **Helper methods:** Methods such as `IsOnBoard()`, `IsValidMove()` and `IsPathBlocked()` make the code easier to understand.
+The game is completed when the player successfully reaches the target.
 
-## Testing
+## Database and Persistence
 
-MSTest is used to test the GamePlayer.
+The application uses Entity Framework Core with SQLite to store saved games.
 
-Tests include:
+Each saved game includes:
 
-* Initial game state
-* Valid and invalid moves
-* Board boundaries
-* Rook movement
-* Bishop movement
-* Knight movement
-* King movement
-* Blocked paths
-* Move history
-* Game completion
-* Moves after completion
+- Saved game name and identifier.
+- Board identity.
+- Current player position.
+- Ordered move history.
+- Game completion status.
 
-## How to Run
+The database is automatically migrated when the WPF application starts.
 
-Open the project in **Visual Studio** and use the terminal.
+The database is stored locally at:
 
-Restore:
-
-```bash
-dotnet restore
-```
-
-Build:
-
-```bash
-dotnet build --no-restore
-```
-
-Run tests:
-
-```bash
-dotnet test --no-build
-```
-
-Run the application:
-
-```bash
-dotnet run --project src/BCIT615.Assessment1.GamePlayer.App --no-build
-```
+`%LOCALAPPDATA%\ChessMazeGamePlayer\gameplayer.db`
 
 ## Project Structure
 
-```text
-BCIT615.Assessment1.GamePlayer
-│
-├── .github
-│
-├── docs
-│
-├── src
-│   │
-│   ├── BCIT615.Assessment1.GamePlayer.App
-│   │   ├── Program.cs
-│   │   └── BCIT615.Assessment1.GamePlayer.App.csproj
-│   │
-│   ├── BCIT615.Assessment1.GamePlayer.Contracts
-│   │   ├── IGamePlayer.cs
-│   │   ├── MoveRecord.cs
-│   │   ├── MoveResult.cs
-│   │   ├── PieceType.cs
-│   │   └── Position.cs
-│   │
-│   └── BCIT615.Assessment1.GamePlayer.Model
-│       ├── GamePlayer.cs
-│       ├── ReferenceBoardData.cs
-│       ├── LEARNER-TASK.md
-│       └── BCIT615.Assessment1.GamePlayer.Model.csproj
-│
-├── tests
-│   │
-│   ├── BCIT615.Assessment1.GamePlayer.ContractTests
-│   │   └── ContractDefinitionTests.cs
-│   │
-│   └── BCIT615.Assessment1.GamePlayer.ModelTests
-│       ├── GamePlayerTests.cs
-│       └── ReferenceBoardDataTests.cs
-│
-├── .gitattributes
-├── .gitignore
-├── BCIT615.Assessment1.GamePlayer.sln
-├── global.json
-└── README.md
+The solution contains the following main projects:
+
+- `BCIT615.Assessment1.GamePlayer` – Shared game contracts.
+- `BCIT615.Assessment1.GamePlayer.Model` – Game rules and game state.
+- `BCIT615.Assessment2.GamePlayer.Application` – Application services and game restoration.
+- `BCIT615.Assessment2.GamePlayer.Persistence` – Database entities, context and repository.
+- `BCIT615.Assessment2.GamePlayer.WPF` – WPF user interface.
+
+The solution also contains separate automated test projects for contracts, game model and persistence/application functionality.
+
+## Requirements
+
+Before running the project, ensure the following are installed:
+
+- Visual Studio 2026.
+- .NET 9 SDK.
+- Windows operating system.
+- Required NuGet packages restored through the solution.
+
+The repository includes a `global.json` file specifying the .NET SDK version.
+
+## How to Restore, Build and Test
+
+Open PowerShell in the root project folder, where the solution file is located.
+
+### Restore dependencies
+
+```powershell
+dotnet restore
 ```
+
+### Build the solution
+
+```powershell
+dotnet build
+```
+
+### Run automated tests
+
+```powershell
+dotnet test
+```
+
+### Run the WPF application
+
+```powershell
+dotnet run --project ".\BCIT615.Assessment2.GamePlayer.WPF\BCIT615.Assessment2.GamePlayer.WPF\BCIT615.Assessment2.GamePlayer.WPF.csproj"
+```
+
+## Git Repository
+
+Git is used for source control and tracking project development.
+
+The project repository is hosted on GitHub:
+
+https://github.com/bir0061/BCDE222_Assessment2_BikenRai
 
 ## Author
 
-**Biken Rai**
+Biken Rai
 
-BCDE222/BCIT615 – Assessment 1
+BCDE222 / BCIT615 – Assessment 2
