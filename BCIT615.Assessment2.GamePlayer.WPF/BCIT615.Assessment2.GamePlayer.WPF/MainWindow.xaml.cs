@@ -7,8 +7,10 @@ using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Media;
 using Microsoft.EntityFrameworkCore;
+
 using BCIT615.Assessment1.GamePlayer;
 using BCIT615.Assessment1.GamePlayer.Model;
+using BCIT615.Assessment2.GamePlayer.Application;
 using BCIT615.Assessment2.GamePlayer.Persistence;
 
 using GamePlayerModel =
@@ -21,6 +23,7 @@ public partial class MainWindow : Window
     private GamePlayerModel _game;
     private readonly GamePlayerDbContext _dbContext;
     private readonly GameSaveRepository _repository;
+    private readonly GameRestorationService _restorationService = new();
 
     // Tracks which saved record belongs to the current game.
     private int? _currentSavedGameId = null;
@@ -295,7 +298,7 @@ public partial class MainWindow : Window
 
         _currentSavedGameId = null;
 
-        //Clear the row and column input fields.
+        // Clear the row and column input fields.
         RowInput.Clear();
         ColumnInput.Clear();
 
@@ -329,7 +332,7 @@ public partial class MainWindow : Window
 
     // Save the current game.
     private async void SaveGameButton_Click(
-    object sender, RoutedEventArgs e)
+        object sender, RoutedEventArgs e)
     {
         string name = SaveNameInput.Text.Trim();
 
@@ -431,96 +434,36 @@ public partial class MainWindow : Window
 
             if (saved == null)
             {
-                StatusText.Text = "The selected saved game no longer exists.";
+                StatusText.Text =
+                    "The selected saved game no longer exists.";
+
                 StatusText.Foreground = Brushes.Red;
                 return;
             }
 
-            if (saved.BoardId != "ReferenceBoard")
-            {
-                StatusText.Text = "This save uses an unsupported board.";
-                StatusText.Foreground = Brushes.Red;
-                return;
-            }
+            // Restore and validate the game using the application service.
+            // The current game is not replaced unless restoration succeeds.
+            GamePlayerModel restoredGame =
+                _restorationService.Restore(saved);
 
-            List<SavedMove>? moves =
-                JsonSerializer.Deserialize<List<SavedMove>>(
-                    saved.MoveHistoryJson);
-
-            if (moves == null)
-            {
-                throw new InvalidDataException(
-                    "The saved move history is invalid.");
-            }
-
-            // Restore into a temporary game first.
-            // The current game remains unchanged unless validation succeeds.
-            GamePlayerModel restoredGame = new GamePlayerModel();
-
-            foreach (SavedMove move in moves)
-            {
-                if (move.SequenceNumber !=
-                    restoredGame.MoveHistory.Count + 1)
-                {
-                    throw new InvalidDataException(
-                        "The saved move sequence is invalid.");
-                }
-
-                Position from = new Position(
-                    move.FromRow, move.FromColumn);
-
-                Position to = new Position(
-                    move.ToRow, move.ToColumn);
-
-                if (!from.Equals(restoredGame.CurrentPosition))
-                {
-                    throw new InvalidDataException(
-                        "The saved move starting position is invalid.");
-                }
-
-                PieceType? piece = restoredGame.GetPieceAt(from);
-
-                if (piece == null ||
-                    piece.Value.ToString() != move.MovementPiece)
-                {
-                    throw new InvalidDataException(
-                        "The saved movement piece is invalid.");
-                }
-
-                MoveResult result = restoredGame.TryMove(to);
-
-                if (result != MoveResult.Success &&
-                    result != MoveResult.GameCompleted)
-                {
-                    throw new InvalidDataException(
-                        $"A saved move could not be restored: {result}.");
-                }
-            }
-
-            // Verify the restored state matches the database record.
-            if (restoredGame.CurrentPosition.Row != saved.CurrentRow ||
-                restoredGame.CurrentPosition.Column != saved.CurrentColumn ||
-                restoredGame.IsComplete != saved.IsComplete)
-            {
-                throw new InvalidDataException(
-                    "The saved game state does not match its move history.");
-            }
-
-            // Replace the current game only after all checks succeed.
+            // Replace the current game only after successful restoration.
             _game = restoredGame;
 
             _currentSavedGameId = saved.Id;
 
-            // Restore the selected saved game name in the input field.
+            // Restore the selected saved game name.
             SaveNameInput.Text = saved.Name;
 
-            // Update the UI to reflect the loaded game.
+            // Clear the input fields.
             RowInput.Clear();
             ColumnInput.Clear();
 
+            // Update the interface.
             UpdateInterface();
 
-            StatusText.Text = $"Game '{saved.Name}' loaded successfully.";
+            StatusText.Text =
+                $"Game '{saved.Name}' loaded successfully.";
+
             StatusText.Foreground = Brushes.Green;
         }
         catch (Exception ex)
@@ -530,8 +473,9 @@ public partial class MainWindow : Window
         }
     }
 
+    // Delete a selected saved game.
     private async void DeleteGameButton_Click(
-    object sender, RoutedEventArgs e)
+        object sender, RoutedEventArgs e)
     {
         if (SavedGamesComboBox.SelectedItem is not SavedGame selected)
         {
@@ -557,14 +501,18 @@ public partial class MainWindow : Window
 
             if (deleted)
             {
-                StatusText.Text = $"Game '{selected.Name}' deleted successfully.";
+                StatusText.Text =
+                    $"Game '{selected.Name}' deleted successfully.";
+
                 StatusText.Foreground = Brushes.Green;
 
                 await RefreshSavedGamesAsync();
             }
             else
             {
-                StatusText.Text = "The selected saved game could not be found.";
+                StatusText.Text =
+                    "The selected saved game could not be found.";
+
                 StatusText.Foreground = Brushes.Red;
             }
         }
@@ -579,15 +527,4 @@ public partial class MainWindow : Window
     {
         return $"({position.Row}, {position.Column})";
     }
-}
-
-// Data stored in the saved move-history JSON.
-public class SavedMove
-{
-    public int SequenceNumber { get; set; }
-    public int FromRow { get; set; }
-    public int FromColumn { get; set; }
-    public int ToRow { get; set; }
-    public int ToColumn { get; set; }
-    public string MovementPiece { get; set; } = string.Empty;
 }
